@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flash_chat/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,6 +36,26 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void getMessages() async{
+
+    final chat = await _fireStore.collection('Messages').get();
+
+    for (var messages in chat.docs){
+      print(messages.data());
+    }
+
+  }
+
+  void messagesStream() async {
+
+    await for(var snapshot in _fireStore.collection('Messages').snapshots()){
+
+      for (var message in snapshot.docs){
+        print(message.data());
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                //Implement logout functionality
+                messagesStream();
               }),
         ],
         title: Text('⚡️Chat'),
