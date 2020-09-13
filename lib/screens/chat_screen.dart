@@ -83,11 +83,42 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            StreamBuilder<QuerySnapshot>(
+                stream: _fireStore.collection('Messages').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+
+                    return Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.blueAccent,
+                      ),
+                    );
+                  }
+                    final messages = snapshot.data.docs;
+
+                    List<MessageBubble> messageBubbles = [];
+                    for (var msg in messages) {
+                      final messageText = msg.get('text');
+                      final messageSender = msg.get('sender');
+                      final messageBubble = MessageBubble(sender: messageSender, text: messageText,);
+                      messageBubbles.add(messageBubble);
+                    }
+                    return Expanded(
+                      child: ListView(
+                        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
+                        children: messageBubbles,
+                      ),
+                    );
+
+                }
+
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
+
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
@@ -114,6 +145,43 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+class MessageBubble extends StatelessWidget {
+
+  MessageBubble({this.sender, this.text});
+
+  final String sender;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(sender, style: TextStyle(color: Colors.black45, fontSize: 12.0),),
+          Material(
+            borderRadius: BorderRadius.circular(30.0),
+            elevation: 5.0,
+            color: Colors.lightBlueAccent,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 20.0),
+              child: Text(
+                '$text',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
